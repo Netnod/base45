@@ -14,7 +14,7 @@
 <?rfc comments='yes' ?>
 <?rfc inline='yes' ?>  
 
-<rfc docName="draft-faltstrom-base45-00" ipr="trust200902" category="std">
+<rfc docName="draft-faltstrom-base45-02" ipr="trust200902" category="std">
   <front>
     <title abbrev="Base45">
       The Base45 Data Encoding
@@ -37,7 +37,7 @@
 	<email>dirkx@webweaving.org</email>
       </address>
     </author>
-    <date month="March" year="2021" day="11"/>
+    <date month="March" year="2021" day="13"/>
     <area>Operations</area>
     <keyword>BASE45</keyword>
     <abstract>
@@ -78,17 +78,18 @@
 	A 45-character subset of US-ASCII is used, the 45 characters
 	that can be used in a QR or Aztec code. If we look at Base 64,
 	it encodes 3 bytes in 4 characters. Base 45 encodes 2 bytes
-	over 3 characters.
+	in 3 characters.
       </t>
       <t>
 	The two bytes [A, B] are turned into [ C, D, E] where (A*256)
-	+ B = (C*45*45) + (D*45) + E. The values C, D and E are then
+	+ B = C + (D*45) + (E*45*45). The values C, D and E are then
 	looked up in Table 1 to produce a three character string and
 	the reverse when decoding.
       </t>
       <t>
 	If the number of octets are not dividable by two, the last
-	remaining byte is represented by two characters.
+	remaining byte is represented by two characters. [A] is turned
+	into [ C, D] where A = C + (D*45).
       </t>
       <t>
 	<figure><artwork>
@@ -117,12 +118,44 @@ Value Encoding  Value Encoding  Value Encoding  Value Encoding
 	  in turned looked up in what is displayed in Table 1.
 	</t>
 	<t>
-	  Example: The string "Hello!" is the byte sequence [ 72, 101,
-	  108, 108, 111, 33 ]. If we look at each 16 bit value, it is
-	  [ 18633, 27756, 28449]. When looking at the values modulo
-	  45, we get [[ 9, 9, 3], [ 13, 30, 36], [14, 2, 9]]. By
-	  looking up these values in the table we get the encoded
-	  string "993DU E29".
+	  Encoding example 1: The string "AB" is the byte sequence [65
+	  66]. The 16 bit value is 65 * 256 + 66 = 16706. 16706 equals
+	  11 + 45 * 11 + 45 * 45 * 8 so the sequence in base 45 is [11
+	  11 8]. By looking up these values in the table we get the
+	  encoded string "BB8".
+	</t>
+	<t>
+	  Encoding example 2: The string "Hello!!" is the byte
+	  sequence [72 101 108 108 111 33 33]. If we look at each 16
+	  bit value, it is [18533 27756 28449 33]. Note the 33 for the
+	  last byte. When looking at the values modulo 45, we get [[38
+	  6 9] [36 31 13] [9 2 14] [33 0]] where the last byte is
+	  represented by two.  By looking up these values in the table
+	  we get the encoded string "%69 VD92EX0".
+	</t>
+	<t>
+	  Encoding example 3: The string "base-45" is the byte
+	  sequence [98 97 115 101 45 52 53]. If we look at each 16 bit
+	  value, it is [25185 29541 11572 53]. Note the 53 for the
+	  last byte. When looking at the values modulo 45, we get [[30
+	  19 12] [21 26 14] [7 32 5] [8 1]] where the last byte is
+	  represented by two.  By looking up these values in the table
+	  we get the encoded string "UJCLQE7W581".
+	</t>
+      </section>
+      <section title="Decoding example">
+	<t>
+	  The series of characters are lookup up in Table 1, and the
+	  indices three and three are interpreted as the numbers 
+	</t>
+	<t>
+	  Decoding example 1: The string "QED8WEX0" represents when
+	  lookup in Table 1 the values [26 14 13 8 32 14 33 0]. We
+	  look at the numbers in three number sequences (except last)
+	  and get [[26 14 13] [8 32 14] [33 0]].  In base 45 we get
+	  [26981 29798 33] where the bytes are [[105 101] [116 102]
+	  [33]].  If we look at the ascii values we get the string
+	  "ietf!".
 	</t>
       </section>
     </section>
@@ -153,9 +186,10 @@ Value Encoding  Value Encoding  Value Encoding  Value Encoding
     </section>
     <section title="Acknowledgements">
       <t>
-	The authors thank everyone that have been working with Base64
-	during the years that have proven the implementions are
-	stable.
+	The authors thank Alan Barrett, Tomas Harreveld, Anders
+	Lowinger and Jakob Schlyter for the feedback. Also everyone
+	that have been working with Base64 during the years that have
+	proven the implementions are stable.
       </t>
     </section>
   </middle>
