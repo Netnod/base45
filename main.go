@@ -10,6 +10,59 @@ import (
 var qrCharset = []byte("0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ $%*+-./:")
 var qrCharsetLen = 45
 
+func betterBase45Encode(s string) string {
+	fmt.Println("encode:", s)
+
+	// Go through the list two bytes at a time
+	firstlist := ""
+	for i := 1; i < len(s); i+=2 {
+		v := int(s[i-1]) * 256 + int(s[i])
+		for j := 0; j < 3; j++ {
+			firstlist = firstlist + string(qrCharset[(v % qrCharsetLen)])
+			v = v / qrCharsetLen
+		}
+	}
+
+	// If odd even of bytes, deal with last byte separately
+	if len(s) % 2 == 1 {
+		v := int(s[len(s)-1])
+		for j := 0; j < 2; j++ {
+			firstlist = firstlist + string(qrCharset[(v % qrCharsetLen)])
+			v = v / qrCharsetLen
+		}
+	}
+
+	fmt.Println("encode:", firstlist)
+	return firstlist
+}
+
+func betterBase45Decode(s string) string {
+	fmt.Println("decode:", s)
+
+	// Go through the list three bytes at a time
+	firstlist := ""
+	for i := 2; i < len(s); i+=3 {
+		v := 0
+		for j := 0; j < 3; j++ {
+			v = v * 45 + bytes.IndexByte(qrCharset, s[i-j])
+		}
+		firstlist = firstlist + string(rune(v / 256)) + string(rune(v % 256))
+	}
+
+	// Take care of last two bytes if they exist
+	if len(s) % 3 > 0 {
+		v := 0
+		i := len(s) - 1
+		for j := 0; j < 2; j++ {
+			v = v * 45 + bytes.IndexByte(qrCharset, s[i-j])
+		}
+		firstlist = firstlist + string(rune(v))
+	}
+	
+	fmt.Println("encode:", firstlist)
+	return firstlist
+}
+
 func base45Encode(s string) string {
 	fmt.Println("encode:", s)
 
@@ -43,14 +96,22 @@ func base45Encode(s string) string {
 	
 	fourthlist := [][]int{}
 	fifthlist := []int{}
-	for _,x := range thirdlist {
+	for _,x := range secondlist {
 		sublist := []int{}
-		for i := 0; i < 3; i++ {
-			if x > 0 {
-				sublist = append(sublist, x % 45)
-				fifthlist = append(fifthlist, x % 45)
+		if len(x) > 1 {
+			v := x[0] * 256 + x[1]
+			for i := 0; i < 3; i++ {
+				sublist = append(sublist, v % qrCharsetLen)
+				fifthlist = append(fifthlist, v % qrCharsetLen)
+				v = v / qrCharsetLen
 			}
-			x = x / 45
+		} else {
+			v := x[0]
+			for i := 0; i < 2; i++ {
+				sublist = append(sublist, v % qrCharsetLen)
+				fifthlist = append(fifthlist, v % qrCharsetLen)
+				v = v / qrCharsetLen
+			}
 		}
 		fourthlist = append(fourthlist, sublist)
 	}
@@ -98,9 +159,9 @@ func base45Decode(s string) string {
 	
 	fourthlist := []int{}
 	for _,x := range thirdlist {
-		i := x[0] + 45 * x[1]
+		i := x[0] + qrCharsetLen * x[1]
 		if len(x) > 2 {
-			i = i + 45 * 45 * x[2]
+			i = i + qrCharsetLen * qrCharsetLen * x[2]
 		}
 		fourthlist = append(fourthlist, i)
 	}
@@ -143,10 +204,14 @@ func main() {
 	if len(*encodePtr) > 0 {
 		encodedString := base45Encode(*encodePtr)
 		fmt.Println("Encoded string:", encodedString)
+		betterEncodedString := betterBase45Encode(*encodePtr)
+		fmt.Println("Better Encoded string:", betterEncodedString)
 	}
 
 	if len(*decodePtr) > 0 {
 		decodedString := base45Decode(*decodePtr)
 		fmt.Println("Decoded string:", decodedString)
+		betterDecodedString := betterBase45Decode(*decodePtr)
+		fmt.Println("Better Decoded string:", betterDecodedString)
 	}
 }
