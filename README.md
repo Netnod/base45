@@ -6,7 +6,7 @@ Here you can find both the internet draft and example code in go.
 All changes to the draft should be in draft-faltstrom-base45.xml.
 
 ```
-$ ./base45 -encode 'Hello!'
+$ ./base45 -encode 'Hello!!'
 encode: Hello!!
 encodeArray: [H e l l o ! !]
 firstlist: [72 101 108 108 111 33 33]
@@ -22,7 +22,7 @@ Better Encoded string: %69 VD92EX0
 ```
 
 ```
-$ ./base45 -decode '%69 VD92E'
+$ ./base45 -decode '%69 VD92EX0'
 decode: %69 VD92EX0
 firstlist: [% 6 9   V D 9 2 E X 0]
 secondlist: [38 6 9 36 31 13 9 2 14 33 0]
