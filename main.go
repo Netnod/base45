@@ -5,13 +5,66 @@ import (
 	"flag"
 	"strings"
 	"bytes"
+	"math/big"
 )
+
+var testPtr *int
+var verbosePtr *bool
 
 var qrCharset = []byte("0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ $%*+-./:")
 var qrCharsetLen = 45
+var bigQrCharsetLen = big.NewInt(int64(qrCharsetLen))
+
+func bigIntBase45Decode(s string) string {
+	input := []byte(s)
+	// Swap string
+	for i, j := 0, len(input)-1; i < j; i, j = i+1, j-1 {
+		input[i], input[j] = input[j], input[i]
+	}
+	result := big.NewInt(0)
+	base := big.NewInt(1)
+	if *verbosePtr {
+		fmt.Println("initbase:", base)
+	}
+	for _, b := range input {
+		value := big.NewInt(int64(bytes.IndexByte(qrCharset, b)))
+		value = value.Mul(value, base)
+		result = result.Add(result, value)
+		if *verbosePtr {
+			fmt.Println("next:", b, string(b))
+			fmt.Println("addition:", value)
+			fmt.Println("intermediate:", result)
+			fmt.Println("base:", base)
+		}
+		base = base.Mul(base, bigQrCharsetLen)
+	}
+	if *verbosePtr {
+		fmt.Println("Result:", result)
+	}
+	return string(result.Bytes())
+}
+
+func bigIntBase45Encode(s string) string {
+	input := []byte(s)
+	estOutputLen := int(float64(len(s))*1.4568) + 1
+	output := make([]byte, 0, estOutputLen)
+	divident, remainder := new(big.Int), new(big.Int)
+	divident.SetBytes(input)
+	for len(divident.Bits()) != 0 {
+		divident, remainder = divident.QuoRem(divident, bigQrCharsetLen, remainder)
+		output = append(output, qrCharset[remainder.Int64()])
+	}
+	// Swap slice
+	for i, j := 0, len(output)-1; i < j; i, j = i+1, j-1 {
+		output[i], output[j] = output[j], output[i]
+	}
+	return string(output)
+}
 
 func betterBase45Encode(s string) string {
-	fmt.Println("encode:", s)
+	if *verbosePtr {
+		fmt.Println("BetterEncode:", s)
+	}
 
 	// Go through the list two bytes at a time
 	firstlist := ""
@@ -32,12 +85,16 @@ func betterBase45Encode(s string) string {
 		}
 	}
 
-	fmt.Println("encode:", firstlist)
+	if *verbosePtr {
+		fmt.Println("encode:", firstlist)
+	}
 	return firstlist
 }
 
 func betterBase45Decode(s string) string {
-	fmt.Println("decode:", s)
+	if *verbosePtr {
+		fmt.Println("decode:", s)
+	}
 
 	// Go through the list three bytes at a time
 	firstlist := ""
@@ -59,21 +116,29 @@ func betterBase45Decode(s string) string {
 		firstlist = firstlist + string(rune(v))
 	}
 	
-	fmt.Println("encode:", firstlist)
+	if *verbosePtr {
+		fmt.Println("encode:", firstlist)
+	}
 	return firstlist
 }
 
 func base45Encode(s string) string {
-	fmt.Println("encode:", s)
+	if *verbosePtr {
+		fmt.Println("encode:", s)
+	}
 
 	encodeArray := strings.Split(s,"")
-	fmt.Println("encodeArray:", encodeArray)
-
+	if *verbosePtr {
+		fmt.Println("encodeArray:", encodeArray)
+	}
+		
 	firstlist := []int{}
 	for _,x := range encodeArray {
 		firstlist = append(firstlist, int(x[0]))
 	}
-	fmt.Println("firstlist:", firstlist)
+	if *verbosePtr {
+		fmt.Println("firstlist:", firstlist)
+	}
 
 	secondlist := [][]int{}
 	for i := 1; i < len(firstlist); i+=2 {
@@ -82,7 +147,9 @@ func base45Encode(s string) string {
 	if len(firstlist) % 2 == 1 {
 		secondlist = append(secondlist, []int{firstlist[len(firstlist)-1]})
 	}
-	fmt.Println("secondlist:", secondlist)
+	if *verbosePtr {
+		fmt.Println("secondlist:", secondlist)
+	}
 
 	thirdlist := []int{}
 	for _,x := range secondlist {
@@ -92,7 +159,9 @@ func base45Encode(s string) string {
 			thirdlist = append(thirdlist, x[0])
 		}
 	}
-	fmt.Println("thirdlist:", thirdlist)
+	if *verbosePtr {
+		fmt.Println("thirdlist:", thirdlist)
+	}
 	
 	fourthlist := [][]int{}
 	fifthlist := []int{}
@@ -115,14 +184,18 @@ func base45Encode(s string) string {
 		}
 		fourthlist = append(fourthlist, sublist)
 	}
-	fmt.Println("fourthlist:", fourthlist)
-	fmt.Println("fifthlist:", fifthlist)
+	if *verbosePtr {
+		fmt.Println("fourthlist:", fourthlist)
+		fmt.Println("fifthlist:", fifthlist)
+	}
 
 	sixthlist := []string{}
 	for _,x := range fifthlist {
 		sixthlist = append(sixthlist, string(qrCharset[x]))
 	}
-	fmt.Println("sixthlist:", sixthlist)
+	if *verbosePtr {
+		fmt.Println("sixthlist:", sixthlist)
+	}
 
 	thestring := ""
 	for _,x := range sixthlist {
@@ -132,16 +205,22 @@ func base45Encode(s string) string {
 }
 
 func base45Decode(s string) string {
-	fmt.Println("decode:", s)
+	if *verbosePtr {
+		fmt.Println("decode:", s)
+	}
 
 	firstlist := strings.Split(s,"")
-	fmt.Println("firstlist:", firstlist)
+	if *verbosePtr {
+		fmt.Println("firstlist:", firstlist)
+	}
 
 	secondlist := []int{}
 	for _,x := range firstlist {
 		secondlist = append(secondlist, bytes.IndexByte(qrCharset, x[0]))
 	}
-	fmt.Println("secondlist:", secondlist)
+	if *verbosePtr {
+		fmt.Println("secondlist:", secondlist)
+	}
 	
 	thirdlist := [][]int{}
 	sublist := []int{}
@@ -155,7 +234,9 @@ func base45Decode(s string) string {
 	if sublist != nil {
 		thirdlist = append(thirdlist, sublist)
 	}
-	fmt.Println("thirdlist:", thirdlist)
+	if *verbosePtr {
+		fmt.Println("thirdlist:", thirdlist)
+	}
 	
 	fourthlist := []int{}
 	for _,x := range thirdlist {
@@ -165,7 +246,9 @@ func base45Decode(s string) string {
 		}
 		fourthlist = append(fourthlist, i)
 	}
-	fmt.Println("fourthlist:", fourthlist)
+	if *verbosePtr {
+		fmt.Println("fourthlist:", fourthlist)
+	}
 
 	fifthlist := [][]int{}
 	sixthlist := []int{}
@@ -179,14 +262,18 @@ func base45Decode(s string) string {
 		sixthlist = append(sixthlist, x % 256)
 		fifthlist = append(fifthlist, sublist)
 	}
-	fmt.Println("fifthlist:", fifthlist)
-	fmt.Println("sixthlist:", sixthlist)
+	if *verbosePtr {
+		fmt.Println("fifthlist:", fifthlist)
+		fmt.Println("sixthlist:", sixthlist)
+	}
 
 	seventhlist := []string{}
 	for _,x := range sixthlist {
 		seventhlist = append(seventhlist, string(rune(x)))
 	}
-	fmt.Println("seventhlist:", seventhlist)
+	if *verbosePtr {
+		fmt.Println("seventhlist:", seventhlist)
+	}
 	
 	thestring := ""
         for _,x := range seventhlist {
@@ -196,22 +283,43 @@ func base45Decode(s string) string {
 }
 
 func main() {
-	encodePtr := flag.String("encode", "", "a string")
-	decodePtr := flag.String("decode", "", "a string")
+	encodePtr := flag.String("e", "", "a string")
+	testPtr = flag.Int("t", 0, "test 1, 2 or 3")
+	verbosePtr = flag.Bool("v", false, "Verbose yes/no")
 
 	flag.Parse()
 
-	if len(*encodePtr) > 0 {
-		encodedString := base45Encode(*encodePtr)
-		fmt.Println("Encoded string:", encodedString)
-		betterEncodedString := betterBase45Encode(*encodePtr)
-		fmt.Println("Better Encoded string:", betterEncodedString)
+	numRun := 1
+	if *testPtr > 0 {
+		numRun = 100000
 	}
 
-	if len(*decodePtr) > 0 {
-		decodedString := base45Decode(*decodePtr)
-		fmt.Println("Decoded string:", decodedString)
-		betterDecodedString := betterBase45Decode(*decodePtr)
-		fmt.Println("Better Decoded string:", betterDecodedString)
+	if len(*encodePtr) > 0 {
+		for i := 0; i < numRun; i++ {
+			if *testPtr == 0 || *testPtr == 1 {
+				encodedString := base45Encode(*encodePtr)
+				decodedString := base45Decode(encodedString)
+				if i == 0 {
+					fmt.Println("Encoded string:", len(encodedString), encodedString)
+					fmt.Println("Decoded string:", len(decodedString), decodedString)
+				}
+			}
+			if *testPtr == 0 || *testPtr == 2 {
+				betterEncodedString := betterBase45Encode(*encodePtr)
+				betterDecodedString := betterBase45Decode(betterEncodedString)
+				if i == 0 {
+					fmt.Println("Better Encoded string:", len(betterEncodedString), betterEncodedString)
+					fmt.Println("Better Decoded string:", len(betterDecodedString), betterDecodedString)
+				}
+			}
+			if *testPtr == 0 || *testPtr == 3 {
+				bigIntEncodedString := bigIntBase45Encode(*encodePtr)
+				bigIntDecodedString := bigIntBase45Decode(bigIntEncodedString)
+				if i == 0 {
+					fmt.Println("BigInt Encoded string:", len(bigIntEncodedString), bigIntEncodedString)
+					fmt.Println("BigInt Decoded string:", len(bigIntDecodedString), bigIntDecodedString)
+				}
+			}
+		}
 	}
 }
