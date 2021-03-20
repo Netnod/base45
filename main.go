@@ -5,7 +5,7 @@ import (
 	"flag"
 	"strings"
 	"bytes"
-	"math/big"
+	//	"math/big"
 )
 
 var testPtr *int
@@ -13,53 +13,53 @@ var verbosePtr *bool
 
 var qrCharset = []byte("0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ $%*+-./:")
 var qrCharsetLen = 45
-var bigQrCharsetLen = big.NewInt(int64(qrCharsetLen))
+//var bigQrCharsetLen = big.NewInt(int64(qrCharsetLen))
 
-func bigIntBase45Decode(s string) string {
-	input := []byte(s)
-	// Swap string
-	for i, j := 0, len(input)-1; i < j; i, j = i+1, j-1 {
-		input[i], input[j] = input[j], input[i]
-	}
-	result := big.NewInt(0)
-	base := big.NewInt(1)
-	if *verbosePtr {
-		fmt.Println("initbase:", base)
-	}
-	for _, b := range input {
-		value := big.NewInt(int64(bytes.IndexByte(qrCharset, b)))
-		value = value.Mul(value, base)
-		result = result.Add(result, value)
-		if *verbosePtr {
-			fmt.Println("next:", b, string(b))
-			fmt.Println("addition:", value)
-			fmt.Println("intermediate:", result)
-			fmt.Println("base:", base)
-		}
-		base = base.Mul(base, bigQrCharsetLen)
-	}
-	if *verbosePtr {
-		fmt.Println("Result:", result)
-	}
-	return string(result.Bytes())
-}
+//func bigIntBase45Decode(s string) string {
+// input := []byte(s)
+// //Swap string
+//for i, j := 0, len(input)-1; i < j; i, j = i+1, j-1 {
+//		input[i], input[j] = input[j], input[i]
+//	}
+//	result := big.NewInt(0)
+//	base := big.NewInt(1)
+//	if *verbosePtr {
+//		fmt.Println("initbase:", base)
+//	}
+//	for _, b := range input {
+//		value := big.NewInt(int64(bytes.IndexByte(qrCharset, b)))
+// 		value = value.Mul(value, base)
+// 		result = result.Add(result, value)
+// 		if *verbosePtr {
+// 			fmt.Println("next:", b, string(b))
+// 			fmt.Println("addition:", value)
+// 			fmt.Println("intermediate:", result)
+// 			fmt.Println("base:", base)
+// 		}
+// 		base = base.Mul(base, bigQrCharsetLen)
+// 	}
+// 	if *verbosePtr {
+// 		fmt.Println("Result:", result)
+// 	}
+// 	return string(result.Bytes())
+// }
 
-func bigIntBase45Encode(s string) string {
-	input := []byte(s)
-	estOutputLen := int(float64(len(s))*1.4568) + 1
-	output := make([]byte, 0, estOutputLen)
-	divident, remainder := new(big.Int), new(big.Int)
-	divident.SetBytes(input)
-	for len(divident.Bits()) != 0 {
-		divident, remainder = divident.QuoRem(divident, bigQrCharsetLen, remainder)
-		output = append(output, qrCharset[remainder.Int64()])
-	}
-	// Swap slice
-	for i, j := 0, len(output)-1; i < j; i, j = i+1, j-1 {
-		output[i], output[j] = output[j], output[i]
-	}
-	return string(output)
-}
+// func bigIntBase45Encode(s string) string {
+// 	input := []byte(s)
+// 	estOutputLen := int(float64(len(s))*1.4568) + 1
+// 	output := make([]byte, 0, estOutputLen)
+// 	divident, remainder := new(big.Int), new(big.Int)
+// 	divident.SetBytes(input)
+// 	for len(divident.Bits()) != 0 {
+// 		divident, remainder = divident.QuoRem(divident, bigQrCharsetLen, remainder)
+// 		output = append(output, qrCharset[remainder.Int64()])
+// 	}
+// 	// Swap slice
+// 	for i, j := 0, len(output)-1; i < j; i, j = i+1, j-1 {
+// 		output[i], output[j] = output[j], output[i]
+// 	}
+// 	return string(output)
+// }
 
 func betterBase45Encode(s string) string {
 	if *verbosePtr {
@@ -284,7 +284,7 @@ func base45Decode(s string) string {
 
 func main() {
 	encodePtr := flag.String("e", "", "a string")
-	testPtr = flag.Int("t", 0, "test 1, 2 or 3")
+	testPtr = flag.Int("t", 0, "test 1 or 2")
 	verbosePtr = flag.Bool("v", false, "Verbose yes/no")
 
 	flag.Parse()
@@ -312,14 +312,14 @@ func main() {
 					fmt.Println("Better Decoded string:", len(betterDecodedString), betterDecodedString)
 				}
 			}
-			if *testPtr == 0 || *testPtr == 3 {
-				bigIntEncodedString := bigIntBase45Encode(*encodePtr)
-				bigIntDecodedString := bigIntBase45Decode(bigIntEncodedString)
-				if i == 0 {
-					fmt.Println("BigInt Encoded string:", len(bigIntEncodedString), bigIntEncodedString)
-					fmt.Println("BigInt Decoded string:", len(bigIntDecodedString), bigIntDecodedString)
-				}
-			}
+			// if *testPtr == 0 || *testPtr == 3 {
+			// 	bigIntEncodedString := bigIntBase45Encode(*encodePtr)
+			// 	bigIntDecodedString := bigIntBase45Decode(bigIntEncodedString)
+			// 	if i == 0 {
+			// 		fmt.Println("BigInt Encoded string:", len(bigIntEncodedString), bigIntEncodedString)
+			// 		fmt.Println("BigInt Decoded string:", len(bigIntDecodedString), bigIntDecodedString)
+			// 	}
+			// }
 		}
 	}
 }
