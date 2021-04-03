@@ -221,8 +221,8 @@ Value Encoding  Value Encoding  Value Encoding  Value Encoding
     <section title="Acknowledgements">
       <t>
 	The authors thank Alan Barrett, Tomas Harreveld, Anders
-	Lowinger, Jakob Schlyter and Peter Teufl for the
-	feedback. Also everyone that have been working with Base64
+	Lowinger, Jakob Schlyter, Peter Teufl and Gaby Whitehead for
+	the feedback. Also everyone that have been working with Base64
 	during the years that have proven the implementions are
 	stable.
       </t>

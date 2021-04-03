@@ -12,7 +12,7 @@ Expires: October 5, 2021                                           Kirei
 
 
                         The Base45 Data Encoding
-                       draft-faltstrom-base45-03
+                       draft-faltstrom-base45-04
 
 Abstract
 
@@ -196,7 +196,8 @@ Internet-Draft                   Base45                       April 2021
 4.4.  Decoding example
 
    The series of characters are lookup up in Table 1, and the indices
-   three and three are interpreted as the numbers
+   for the characters, three and three, are interpreted as a number in
+   base 45.  This number is then turned into two bytes in base 8.
 
    Decoding example 1: The string "QED8WEX0" represents when lookup in
    Table 1 the values [26 14 13 8 32 14 33 0].  We look at the numbers
@@ -220,7 +221,6 @@ Internet-Draft                   Base45                       April 2021
 
 
 
-
 Faltstrom, et al.        Expires October 5, 2021                [Page 4]
 
 Internet-Draft                   Base45                       April 2021
@@ -240,10 +240,10 @@ Internet-Draft                   Base45                       April 2021
 
 7.  Acknowledgements
 
-   The authors thank Alan Barrett, Tomas Harreveld, Anders Lowinger,
-   Jakob Schlyter, Peter Teufl and Gaby Whitehead for the feedback.
-   Also everyone that have been working with Base64 during the years
-   that have proven the implementions are stable.
+   The authors thank Alan Barrett, Tomas Harreveld, Christian Landgren,
+   Anders Lowinger, Jakob Schlyter, Peter Teufl and Gaby Whitehead for
+   the feedback.  Also everyone that have been working with Base64
+   during the years that have proven the implementions are stable.
 
 8.  Normative References
 
