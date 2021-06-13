@@ -14,7 +14,7 @@
 <?rfc comments='yes' ?>
 <?rfc inline='yes' ?>  
 
-<rfc docName="draft-faltstrom-base45-04" ipr="trust200902" category="std">
+<rfc docName="draft-faltstrom-base45-05" ipr="trust200902" category="std">
   <front>
     <title abbrev="Base45">
       The Base45 Data Encoding
@@ -37,25 +37,36 @@
 	<email>dirkx@webweaving.org</email>
       </address>
     </author>
-    <date month="April" year="2021" day="03"/>
+    <date month="June" year="2021" day="13"/>
     <area>Operations</area>
     <keyword>BASE45</keyword>
     <abstract>
       <t>
-	This document describes the base 45 encoding scheme which is
-	built upon the base 64, base 32 and base 16 encoding schemes.
+	This document describes the Base45 encoding scheme which is
+	built upon the Base64, Base32 and Base16 encoding schemes.
       </t>
     </abstract>
   </front>
   <middle>
     <section anchor="intro" title="Introduction">
       <t>
-	When using QR or Aztec codes a different encoding scheme is
-	needed than the already established base 64, base 32 and base
-	16 encoding schemes that are described in <xref
-	target="RFC4648">RFC 4648</xref>. The difference from those and
-	base 45 is the key table and that the padding with '=' is not
-	required.
+	A QR-code is used to encode text as a graphical
+	image. Depending on the characters used in the text various
+	encoding options for a QR-code exists, e.g. Numeric,
+	Alphanumeric and Byte mode. Even in Byte mode a typical
+	QR-code reader tries to interpret a byte sequence as an UTF-8
+	or ISO/IEC 8859-1 encoded text. Thus QR-codes cannot be used
+	to encode arbitrary binary data directly. Such data has to be
+	converted into an appropriate text before that text could be
+	encoded as a QR-code.  Compared to already established Base64,
+	Base32 and Base16 encoding schemes, that are described in
+	<xref target="RFC4648">RFC 4648</xref>, the Base45 scheme
+	described in this document offer a more compact QR-code
+	encoding.
+      </t>
+      <t>
+	One important difference from those and Base45 is the key
+	table and that the padding with '=' is not required.
       </t>
     </section>
     <section title="Conventions Used in This Document">
@@ -73,50 +84,74 @@
 	different alphabet is selected.
       </t>
     </section>
-    <section title="The Base 45 Encoding">
+    <section title="The Base45 Encoding">
       <t>
-	A 45-character subset of US-ASCII is used, the 45 characters
-	that can be used in a QR or Aztec code. If we look at Base 64,
-	it encodes 3 bytes in 4 characters. Base 45 encodes 2 bytes
-	in 3 characters.
+	A 45-character subset of US-ASCII is used; the 45 characters
+	usable in a QR code in Alphanumeric mode. Base45
+	encodes 2 bytes in 3 characters, compared to Base64,
+	which encodes 3 bytes in 4 characters.
       </t>
       <t>
-	The two bytes [A, B] are turned into [C, D, E] where (A*256)
-	+ B = C + (D*45) + (E*45*45). The values C, D and E are then
-	looked up in Table 1 to produce a three character string and
-	the reverse when decoding.
+	For encoding two bytes [a, b] MUST be interpreted as a number
+	n in base 256, i.e. as an unsigned integer over 16 bits so
+	that the number n = (a*256) + b.
       </t>
       <t>
-	If the number of octets are not dividable by two, the last
-	remaining byte is represented by two characters. [A] is turned
-	into [C, D] where A = C + (D*45).
+	This number n is converted to base 45 [c, d, e] so that n = c
+	+ (d*45) + (e*45*45). Note the order of c, d an e which are
+	chosen so that the left-most [c] is the least significant.
+      </t>
+      <t>
+	The values c, d and e are then looked up in Table 1 to produce
+	a three character string. The process is recersed when
+	decoding.
+      </t>
+      <t>
+	For encoding a single byte [a], it MUST be interpreted as a
+	base 256 number, i.e. as an unsigned integer over 8 bit. That
+	integer MUST be converted to base 45 [c d] so that a = c
+	+ (45*d). The values c and d are then looked up in Table 1 to
+	produce a two character string.
+      </t>
+      <t>
+	A byte string [a b c d ... x y z] with arbitrary content and
+	arbitrary length MUST be encoded as follows: From left to
+	right pairs of bytes are encoded as described above. If the
+	number of bytes is even, then the encoded form is a string
+	with a length which is evenly divisible by 3. If the number of
+	bytes is odd, then the last (rightmost) byte is encoded on two
+	characters as described above.
+      </t>
+      <t>
+	For decoding a Base45 encoded string the inverse operations
+	are performed.
       </t>
       <section title="When to use Base45">
 	<t>
 	  If binary data is to be stored in a QR-Code one possible way
-	  is to use the Alphanumeric encoding that uses 11 bits for 2
+	  is to use the Alphanumeric mode that uses 11 bits for 2
 	  characters as defined in section 7.3.4 in <xref
 	  target="ISO18004">ISO/IEC 18004:2015</xref>. The
 	  ECI mode indicator for this encoding is 0010.
 	</t>
 	<t>
-	  If the data is to use some other transport a transport
-	  encoding suitable for that transport should be used. It is
-	  not recommended to for example first encode data in Base45
-	  and then encode the Base45 blob in for example Base64 if the
-	  data is to be sent via email. Instead the Base45 encoding
-	  should be removed, and the data itself should be encoded in
-	  Base64.
+	  If the data is to be sent via some other transport, a
+	  transport encoding suitable for that transport should be
+	  used instead of Base45. It is not recommended to first
+	  encode data in Base45 and then encode the resulting string
+	  in for example Base64 if the data is to be sent via
+	  email. Instead the Base45 encoding should be removed, and
+	  the data itself should be encoded in Base64.
 	</t>
       </section>
       <section title="The alphabet used in Base45">
 	<t>
-	  The alphanumeric code is defined to use 45 characters as specified
+	  The Alphanumeric mode is defined to use 45 characters as specified
 	  in this alphabet.
 	</t>
 	<t>
 	  <figure><artwork>
-               Table 1: The Base 45 Alphabet
+               Table 1: The Base45 Alphabet
 
 Value Encoding  Value Encoding  Value Encoding  Value Encoding
    00 0            12 C            24 O            36 Space
@@ -134,13 +169,7 @@ Value Encoding  Value Encoding  Value Encoding  Value Encoding
           </artwork></figure>
 	</t>
       </section>
-      <section title="Encoding example">
-	<t>
-	  A series of bytes is turned into groups of two. Each such 16
-	  bit value is turned into a series of three values calculated
-	  by doing successive calculations modulo 45. The values are
-	  in turned looked up in what is displayed in Table 1.
-	</t>
+      <section title="Encoding examples">
 	<t>
 	  It should be noted that although the examples are all text,
 	  Base45 is an encoding for binary data where each octet can
@@ -150,43 +179,37 @@ Value Encoding  Value Encoding  Value Encoding  Value Encoding
 	  Encoding example 1: The string "AB" is the byte sequence [65
 	  66]. The 16 bit value is 65 * 256 + 66 = 16706. 16706 equals
 	  11 + 45 * 11 + 45 * 45 * 8 so the sequence in base 45 is [11
-	  11 8]. By looking up these values in the table we get the
+	  11 8]. By looking up these values in the Table 1 we get the
 	  encoded string "BB8".
 	</t>
 	<t>
-	  Encoding example 2: The string "Hello!!" is the byte
-	  sequence [72 101 108 108 111 33 33]. If we look at each 16
-	  bit value, it is [18533 27756 28449 33]. Note the 33 for the
-	  last byte. When looking at the values modulo 45, we get [[38
-	  6 9] [36 31 13] [9 2 14] [33 0]] where the last byte is
-	  represented by two.  By looking up these values in the table
-	  we get the encoded string "%69 VD92EX0".
+	  Encoding example 2: The string "Hello!!" as ASCII is the
+	  byte sequence [72 101 108 108 111 33 33]. If we look at each
+	  16 bit value, it is [18533 27756 28449 33]. Note the 33 for
+	  the last byte. When looking at the values modulo 45, we get
+	  [[38 6 9] [36 31 13] [9 2 14] [33 0]] where the last byte is
+	  represented by two.  By looking up these values in the Table
+	  1 we get the encoded string "%69 VD92EX0".
 	</t>
 	<t>
-	  Encoding example 3: The string "base-45" is the byte
-	  sequence [98 97 115 101 45 52 53]. If we look at each 16 bit
-	  value, it is [25185 29541 11572 53]. Note the 53 for the
-	  last byte. When looking at the values modulo 45, we get [[30
-	  19 12] [21 26 14] [7 32 5] [8 1]] where the last byte is
-	  represented by two.  By looking up these values in the table
-	  we get the encoded string "UJCLQE7W581".
+	  Encoding example 3: The string "base-45" as ASCII is the
+	  byte sequence [98 97 115 101 45 52 53]. If we look at each
+	  16 bit value, it is [25185 29541 11572 53]. Note the 53 for
+	  the last byte. When looking at the values modulo 45, we get
+	  [[30 19 12] [21 26 14] [7 32 5] [8 1]] where the last byte
+	  is represented by two.  By looking up these values in the
+	  Table 1 we get the encoded string "UJCLQE7W581".
 	</t>
       </section>
-      <section title="Decoding example">
+      <section title="Decoding examples">
 	<t>
-	  The series of characters are lookup up in Table 1, and the
-	  indices for the characters, three and three, are interpreted
-	  as a number in base 45. This number is then turned into two
-	  bytes in base 8.
-	</t>
-	<t>
-	  Decoding example 1: The string "QED8WEX0" represents when
-	  lookup in Table 1 the values [26 14 13 8 32 14 33 0]. We
-	  look at the numbers in three number sequences (except last)
-	  and get [[26 14 13] [8 32 14] [33 0]].  In base 45 we get
-	  [26981 29798 33] where the bytes are [[105 101] [116 102]
-	  [33]].  If we look at the ascii values we get the string
-	  "ietf!".
+	  Decoding example 1: The string "QED8WEX0" represents, when
+	  looked up in Table 1, the values [26 14 13 8 32 14 33 0]. We
+	  arrange at the numbers in chunks of three, except last which
+	  can be two, and get [[26 14 13] [8 32 14] [33 0]].  In base
+	  45 we get [26981 29798 33] where the bytes are [[105 101]
+	  [116 102] [33]].  If we look at the ascii values we get the
+	  string "ietf!".
 	</t>
       </section>
     </section>
@@ -198,35 +221,65 @@ Value Encoding  Value Encoding  Value Encoding  Value Encoding
     <section title="Security Considerations">
       <t>
 	When implementing encoding and decoding it is important to be
-	very careful so that buffer overflow does not take place, or
-	anything similar. This includes of course the calculations of
-	modulo 45 and lookup in the table of characters. Decoder also
-	must be robust regarding input, including proper handling of
-	any byte value 0-255, including the NUL character (ASCII 0).
+	very careful so that buffer overflow or similar does not
+	occur.  This of course includes the calculations for modulo 45
+	and lookup in the table of characters (Table 1). A decoder
+	also must be robust regarding input, including proper handling
+	of any octet value 0-255, including the NUL character (ASCII
+	0).
       </t>
       <t>
-	It should be noted that Base 64 (for example) pad the string
-	so that the encoding has the correct number of
-	characters. This is something that Base 45 does not do,
-	i.e. Base 45 do not include padding.  Because of this, special
-	care is to be taken when odd number of octets are to be
-	encoded which results not in N*3 characters, but (N-1)*3+2
-	characters in the encoded string and vice versa, when the
-	number of encoded characters are not divisible by 3.
+	It should be noted that Base64 and some other encodings pad
+	the string so that the encoding starts with an aligned number
+	of characters, Base45 specifically avoids padding.  Because of
+	this, special care has to be taken when odd number of octets
+	are to be encoded, which results not in N*3 characters, but
+	(N-1)*3+2 characters in the encoded string and similarly, at
+	decoding, when the number of encoded characters are not evenly
+	divisible by 3.
       </t>
       <t>
-	Further that a base45 encoded piece of data includes
-	non-URL-safe characters so if base45 encoded data have to be
-	URL safe, one have to use %-encoding.
+	Base encodings use a specific, reduced alphabet to encode
+	binary data. Non-alphabet characters could exist within
+	base-encoded data, caused by data corruption or by
+	design. Non-alphabet characters may be exploited as a "covert
+	channel", where non-protocol data can be sent for nefarious
+	purposes. Non-alphabet characters might also be sent in order
+	to exploit implementation errors leading to, e.g., buffer
+	overflow attacks.
+      </t>
+      <t>
+	Implementations MUST reject the encoded data if it contains
+	characters outside the base alphabet (in Table 1) when
+	interpreting base-encoded data.
+      </t>
+      <t>
+	Even though a Base45 encoded string contains only characters
+	from the alphabet in Table 1 the following case has to be
+	considered: The string "FGW" represents 65535 (FFFF in base 16),
+	which is a valid encoding.  The string "GGW" would represent
+	65536 (10000 in base 16), which is represented by more than 16 bit.
+      </t>
+      <t>
+	Implementations MUST reject the encoded data if it contains a
+	triplet of characters which, when decoded, result in an
+	unsigned integer which is greater then 65535 (ffff in base 16).
+      </t>
+      <t>
+	It should be noted that the resulting string after encoding to
+	Base45 might include non-URL-safe characters so if the URL
+	including the Base45 encoded data have to be URL safe, one
+	have to use %-encoding.
       </t>
     </section>
     <section title="Acknowledgements">
       <t>
-	The authors thank Alan Barrett, Tomas Harreveld, Christian
-	Landgren, Anders Lowinger, Jakob Schlyter, Peter Teufl and
-	Gaby Whitehead for the feedback. Also everyone that have been
-	working with Base64 during the years that have proven the
-	implementions are stable.
+	The authors thank Alan Barrett, Alfred Fiedler, Tomas
+	Harreveld, Christian Landgren, Anders Lowinger, Mans Nilsson,
+	Jakob Schlyter, Peter Teufl and Gaby Whitehead for the
+	feedback. Also everyone that have been working with Base64
+	over a long period of years and have proven the implementions
+	are stable.
       </t>
     </section>
   </middle>
