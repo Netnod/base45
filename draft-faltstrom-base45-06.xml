@@ -14,7 +14,7 @@
 <?rfc comments='yes' ?>
 <?rfc inline='yes' ?>  
 
-<rfc docName="draft-faltstrom-base45-05" ipr="trust200902" category="std">
+<rfc docName="draft-faltstrom-base45-06" ipr="trust200902" category="std">
   <front>
     <title abbrev="Base45">
       The Base45 Data Encoding

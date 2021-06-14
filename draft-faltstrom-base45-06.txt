@@ -12,7 +12,7 @@ Expires: December 16, 2021                                         Kirei
 
 
                         The Base45 Data Encoding
-                       draft-faltstrom-base45-05
+                       draft-faltstrom-base45-06
 
 Abstract
 
