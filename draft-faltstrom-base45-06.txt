@@ -78,9 +78,9 @@ Table of Contents
 
    A QR-code is used to encode text as a graphical image.  Depending on
    the characters used in the text various encoding options for a QR-
-   code exists, e.g.  Numeric, Alphanumeric and Byte mode.  Even in Byte
+   code exist, e.g.  Numeric, Alphanumeric and Byte mode.  Even in Byte
    mode a typical QR-code reader tries to interpret a byte sequence as
-   an UTF-8 or ISO/IEC 8859-1 encoded text.  Thus QR-codes cannot be
+   a UTF-8 or ISO/IEC 8859-1 encoded text.  Thus QR-codes cannot be
    used to encode arbitrary binary data directly.  Such data has to be
    converted into an appropriate text before that text could be encoded
    as a QR-code.  Compared to already established Base64, Base32 and
@@ -126,14 +126,14 @@ Internet-Draft                   Base45                        June 2021
    n = (a*256) + b.
 
    This number n is converted to base 45 [c, d, e] so that n = c +
-   (d*45) + (e*45*45).  Note the order of c, d an e which are chosen so
+   (d*45) + (e*45*45).  Note the order of c, d and e which are chosen so
    that the left-most [c] is the least significant.
 
    The values c, d and e are then looked up in Table 1 to produce a
    three character string.  The process is reversed when decoding.
 
    For encoding a single byte [a], it MUST be interpreted as a base 256
-   number, i.e. as an unsigned integer over 8 bit.  That integer MUST be
+   number, i.e. as an unsigned integer over 8 bits.  That integer MUST be
    converted to base 45 [c d] so that a = c + (45*d).  The values c and
    d are then looked up in Table 1 to produce a two character string.
 
@@ -229,11 +229,11 @@ Internet-Draft                   Base45                        June 2021
 4.4.  Decoding examples
 
    Decoding example 1: The string "QED8WEX0" represents, when looked up
-   in Table 1, the values [26 14 13 8 32 14 33 0].  We arrange at the
-   numbers in chunks of three, except last which can be two, and get
-   [[26 14 13] [8 32 14] [33 0]].  In base 45 we get [26981 29798 33]
+   in Table 1, the values [26 14 13 8 32 14 33 0].  We arrange the
+   numbers in chunks of three, except for the last one which can be two, and get
+   [[26 14 13] [8 32 14] [33 0]].  In Base45 we get [26981 29798 33]
    where the bytes are [[105 101] [116 102] [33]].  If we look at the
-   ascii values we get the string "ietf!".
+   ASCII values we get the string "ietf!".
 
 5.  IANA Considerations
 
@@ -244,7 +244,7 @@ Internet-Draft                   Base45                        June 2021
    When implementing encoding and decoding it is important to be very
    careful so that buffer overflow or similar does not occur.  This of
    course includes the calculations for modulo 45 and lookup in the
-   table of characters (Table 1).  A decoder also must be robust
+   table of characters (Table 1).  A decoder must also be robust
    regarding input, including proper handling of any octet value 0-255,
    including the NUL character (ASCII 0).
 
@@ -283,12 +283,12 @@ Internet-Draft                   Base45                        June 2021
 
 
    Implementations MUST reject the encoded data if it contains a triplet
-   of characters which, when decoded, result in an unsigned integer
-   which is greater then 65535 (ffff in base 16).
+   of characters which, when decoded, results in an unsigned integer
+   which is greater than 65535 (ffff in base 16).
 
    It should be noted that the resulting string after encoding to Base45
    might include non-URL-safe characters so if the URL including the
-   Base45 encoded data have to be URL safe, one have to use %-encoding.
+   Base45 encoded data has to be URL safe, one has to use %-encoding.
 
 7.  Acknowledgements
 
