@@ -41,7 +41,7 @@ func betterBase45Encode(s []byte) string {
   }
 
   if *verbosePtr {
-    fmt.Println("encode:", firstlist)
+    fmt.Println("encode1:", firstlist)
   }
   return firstlist
 }
@@ -71,15 +71,12 @@ func betterBase45Decode(s string) []byte {
     firstlist = firstlist + string(rune(v))
   }
 
-  if *verbosePtr {
-    fmt.Println("encode:", firstlist)
-  }
   return []byte(firstlist)
 }
 
 func base45Encode(s []byte) string {
   if *verbosePtr {
-    fmt.Println("encode:", s)
+    fmt.Println("encode3:", s)
   }
 
   encodeArray := s
@@ -240,10 +237,21 @@ func base45Decode(s string) []byte {
   return []byte(thestring)
 }
 
+func hexrequired (s string) bool {
+  for _, c := range s {
+    if c < ' ' || c > '~' {
+      return true
+    }
+  }
+  return false
+}
+
 func main() {
   ishex = false
+  bothPtr := flag.String("b", "", "a string")
   encodePtr := flag.String("e", "", "a string")
-  testPtr = flag.Int("t", 0, "test 1 or 2")
+  decodePtr := flag.String("d", "", "a string")
+  testPtr = flag.Int("t", 0, "test 1 or 2 10.000 times (default both once)")
   verbosePtr = flag.Bool("v", false, "Verbose yes/no")
 
   flag.Parse()
@@ -255,8 +263,21 @@ func main() {
 
   var theBytes []byte
   var err error
-  a := *encodePtr
-  if a[0:2] == "0x" {
+  var a string
+  encode := false
+  decode := false
+  if len(*bothPtr) > 0 {
+    a = *bothPtr
+    encode = true
+    decode = true
+  } else if len(*encodePtr) > 0 {
+    a = *encodePtr
+    encode = true
+  } else if len(*decodePtr) > 0 {
+    a = *decodePtr
+    decode = true
+  }
+  if encode && len(a) > 2 && a[0:2] == "0x" {
     ishex = true
     theBytes, err = hex.DecodeString(a[2:])
     if err != nil {
@@ -266,34 +287,58 @@ func main() {
     theBytes = []byte(a)
   }
 
+  var encodedString string
+  var decodedBytes []byte
+  var betterEncodedString string
+  var betterDecodedBytes []byte
   if len(theBytes) > 0 {
     for i := 0; i < numRun; i++ {
       if *testPtr == 0 || *testPtr == 1 {
-        encodedString := base45Encode(theBytes)
-        decodedBytes := base45Decode(encodedString)
+        if encode {
+          encodedString = base45Encode(theBytes)
+        } else {
+          encodedString = string(theBytes)
+        }
+        if decode {
+          decodedBytes = base45Decode(encodedString)
+        }
         if i == 0 {
-          var decodedString string
-          if ishex {
-            decodedString = "0x" + string(hex.EncodeToString(decodedBytes))
-          } else {
-            decodedString = string(decodedBytes)
+          if encode {
+            fmt.Println("Encoded string:", len(encodedString), encodedString)
           }
-          fmt.Println("Encoded string:", len(encodedString), encodedString)
-          fmt.Println("Decoded string:", len(decodedBytes), decodedString)
+          if decode {
+            var decodedString string
+            if hexrequired(string(decodedBytes)) {
+              decodedString = "0x" + string(hex.EncodeToString(decodedBytes))
+            } else {
+              decodedString = string(decodedBytes)
+            }
+            fmt.Println("Decoded string:", len(decodedBytes), decodedString)
+          }
         }
       }
       if *testPtr == 0 || *testPtr == 2 {
-        betterEncodedString := betterBase45Encode(theBytes)
-        betterDecodedBytes := betterBase45Decode(betterEncodedString)
+        if encode {
+          betterEncodedString = betterBase45Encode(theBytes)
+        } else {
+          betterEncodedString = string(theBytes)
+        }
+        if decode {
+          betterDecodedBytes = betterBase45Decode(betterEncodedString)
+        }
         if i == 0 {
-          var betterDecodedString string
-          if ishex {
-            betterDecodedString = "0x" + string(hex.EncodeToString(betterDecodedBytes))
-          } else {
-            betterDecodedString = string(betterDecodedBytes)
+          if encode {
+            fmt.Println("Better Encoded string:", len(betterEncodedString), betterEncodedString)
           }
-          fmt.Println("Better Encoded string:", len(betterEncodedString), betterEncodedString)
-          fmt.Println("Better Decoded string:", len(betterDecodedBytes), betterDecodedString)
+          if decode {
+            var betterDecodedString string
+            if hexrequired(string(betterDecodedBytes)) {
+              betterDecodedString = "0x" + string(hex.EncodeToString(betterDecodedBytes))
+            } else {
+              betterDecodedString = string(betterDecodedBytes)
+            }
+            fmt.Println("Better Decoded string:", len(betterDecodedBytes), betterDecodedString)
+          }
         }
       }
     }
