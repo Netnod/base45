@@ -3,6 +3,8 @@ Specification of base45 encoding
 
 Here you can find both the internet draft and example code in go.
 
+Licensed with a BSD-3 clause to Netnod.
+
 All changes to the draft should be in draft-faltstrom-base45.xml.
 
 ```
